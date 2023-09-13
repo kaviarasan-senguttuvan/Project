@@ -3,4 +3,4 @@ pymongo
 psycopg2
 streamlit
 pandas
-
+streamlit-option-menu
