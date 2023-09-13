@@ -4,6 +4,7 @@ from pprint import pprint
 import psycopg2 as ps
 import pandas as pd
 import streamlit as st
+from streamlit_option_menu import option_menu
 #from sqlalchemy import create_engine
 
 #connection to youtube API services 
@@ -364,31 +365,73 @@ def qus10():
 
 
 st.title('YouTube Data Harvesting and Warehousing')
-c_name = st.text_input("Enter the youtube channel name and press Next: ")
-step1 = st.button('Next')
-if step1:
-    st.write(f"Given channel name is {c_name} please proceed next step")
-    yt = connect_api()
-    Channel_info = channel_info('a')
-    #st.json(Channel_info)
 
-step2 = st.button('Migrate Data to MongoDB')
-if step2:
+
+selected = option_menu(None, ["Home", "Lode Data In SQL", 'Select the Query'], 
+    icons=['house', 'cloud-upload', "list-task", 'gear'], 
+    menu_icon="cast", default_index=0, orientation="horizontal")
+selected
+
+
+if selected == 'Home':
+  c_name = st.text_input("Enter the youtube channel name and press submit: ")
+  step1 = st.button('Submit')
+  if step1:
+    st.write(f"Given channel name is {c_name}, please click Migrate Data to MongoDB ")
     yt = connect_api()
     Channel_info = channel_info('a')
-    playlist_id = playlist_info()
-    Vedio_info = vedio_info(playlist_id)
-    Vedio_id_info = vedio_id_info(playlist_id)
-    cmd = comment_info()
-    final = Final_Table()
-    kavi = pymongo.MongoClient("mongodb+srv://kavi:kaviarasan@kaviarasan.obhf2rg.mongodb.net/?retryWrites=true&w=majority")
-    nosqldb=kavi["you_tube_data"]
-    coll=nosqldb["channels_details"]
-    coll.insert_one(final)
     st.json(Channel_info)
 
-step3  = st.button('Lode Data In SQL')
-if step3:
+
+  step2 = st.button('Migrate Data to MongoDB')
+  if step2:
+      yt = connect_api()
+      Channel_info = channel_info('a')
+      playlist_id = playlist_info()
+      Vedio_info = vedio_info(playlist_id)
+      Vedio_id_info = vedio_id_info(playlist_id)
+      cmd = comment_info()
+      final = Final_Table()
+      kavi = pymongo.MongoClient("mongodb+srv://kavi:kaviarasan@kaviarasan.obhf2rg.mongodb.net/?retryWrites=true&w=majority")
+      nosqldb=kavi["you_tube_data"]
+      coll=nosqldb["channels_details"]
+      coll.insert_one(final)
+      #st.json(Channel_info)
+
+if selected == 'Lode Data In SQL':
+  step3  = st.button('Lode Data In SQL')
+  if step3:
+    host_name = 'database-1.cjti1owjmpi2.ap-south-1.rds.amazonaws.com'
+    dbname = 'youtube'
+    port = '5432'
+    username = 'postgres'
+    password = '12345678'
+    conn = None
+    conn = ps.connect(host=host_name, database=dbname, user=username, password=password, port=port)
+    cursor = conn.cursor()
+    df = get_chn_Table()
+    df1 = get_vedio_Table()
+    df2 = get_cmd_Table()
+    
+    drop_tables()
+    create_tables()
+    insert_data_tables()
+    st.dataframe(df)
+
+
+if selected =='Select the Query':
+  step4 = st.subheader('Select the Query below')
+  q1 = 'Q1-What are the names of all the videos and their corresponding channels?'
+  q2 = 'Q2-Which channels have the most number of videos, and how many videos do they have?'
+  q3 = 'Q3-What are the top 10 most viewed videos and their respective channels?'
+  q4 = 'Q4-How many comments were made on each video with their corresponding video names?'
+  q5 = 'Q5-Which videos have the highest number of likes with their corresponding channel names?'
+  q6 = 'Q6-What is the total number of likes for each video with their corresponding video names?'
+  q7 = 'Q7-What is the total number of views for each channel with their corresponding channel names?'
+  q8 = 'Q8-What are the names of all the channels that have published videos in the 2023?'
+  q9 = 'Q9-What is the average duration of all videos in each channel with corresponding channel names?'
+  q10 = 'Q10-Which videos have the highest number of comments with their corresponding channel names?'
+
   host_name = 'database-1.cjti1owjmpi2.ap-south-1.rds.amazonaws.com'
   dbname = 'youtube'
   port = '5432'
@@ -397,59 +440,28 @@ if step3:
   conn = None
   conn = ps.connect(host=host_name, database=dbname, user=username, password=password, port=port)
   cursor = conn.cursor()
-  df = get_chn_Table()
-  df1 = get_vedio_Table()
-  df2 = get_cmd_Table()
-  
-  drop_tables()
-  create_tables()
-  insert_data_tables()
-  st.dataframe(df)
 
-
-
-step4 = st.subheader('Select the Query below')
-q1 = 'Q1-What are the names of all the videos and their corresponding channels?'
-q2 = 'Q2-Which channels have the most number of videos, and how many videos do they have?'
-q3 = 'Q3-What are the top 10 most viewed videos and their respective channels?'
-q4 = 'Q4-How many comments were made on each video with their corresponding video names?'
-q5 = 'Q5-Which videos have the highest number of likes with their corresponding channel names?'
-q6 = 'Q6-What is the total number of likes for each video with their corresponding video names?'
-q7 = 'Q7-What is the total number of views for each channel with their corresponding channel names?'
-q8 = 'Q8-What are the names of all the channels that have published videos in the 2023?'
-q9 = 'Q9-What is the average duration of all videos in each channel with corresponding channel names?'
-q10 = 'Q10-Which videos have the highest number of comments with their corresponding channel names?'
-
-host_name = 'database-1.cjti1owjmpi2.ap-south-1.rds.amazonaws.com'
-dbname = 'youtube'
-port = '5432'
-username = 'postgres'
-password = '12345678'
-conn = None
-conn = ps.connect(host=host_name, database=dbname, user=username, password=password, port=port)
-cursor = conn.cursor()
-
-query_option = st.selectbox('', ['Select One', q1, q2, q3, q4, q5, q6, q7, q8, q9, q10])
-if query_option == q1:
-   st.dataframe(qus1())
-elif query_option == q2:
-   st.dataframe(qus2())
-elif query_option == q3:
-   st.dataframe(qus3())
-elif query_option == q4:
-   st.dataframe(qus4())
-elif query_option == q5:
-   st.dataframe(qus5())
-elif query_option == q6:
-   st.dataframe(qus6())
-elif query_option == q7:
-   st.dataframe(qus7())
-elif query_option == q8:
-  st.dataframe(qus8())
-elif query_option == q9:
-  st.dataframe(qus9())
-elif query_option == q10:
-  st.dataframe(qus10())
+  query_option = st.selectbox('', ['Select One', q1, q2, q3, q4, q5, q6, q7, q8, q9, q10])
+  if query_option == q1:
+    st.dataframe(qus1())
+  elif query_option == q2:
+    st.dataframe(qus2())
+  elif query_option == q3:
+    st.dataframe(qus3())
+  elif query_option == q4:
+    st.dataframe(qus4())
+  elif query_option == q5:
+    st.dataframe(qus5())
+  elif query_option == q6:
+    st.dataframe(qus6())
+  elif query_option == q7:
+    st.dataframe(qus7())
+  elif query_option == q8:
+    st.dataframe(qus8())
+  elif query_option == q9:
+    st.dataframe(qus9())
+  elif query_option == q10:
+    st.dataframe(qus10())
 
 
 
