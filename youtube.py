@@ -49,8 +49,8 @@ def playlist_info():
   Playlist_Id = responce3['items'][0]['contentDetails']['relatedPlaylists']['uploads']
   return Playlist_Id
 
-
 def vedio_info(playlist_id):
+  
   def time_duration(t):
         a = pd.Timedelta(t)
         b = str(a).split()[-1]
@@ -69,6 +69,7 @@ def vedio_info(playlist_id):
     request = yt.videos().list(part="snippet,contentDetails,statistics", id=i)
     responce5 = request.execute()
     a.append(responce5['items'][0])
+    #pprint(responce5['items'][0])
   z =[]
   for i in a:
     filtered_dict = {'video_id': i['id'],
@@ -85,10 +86,13 @@ def vedio_info(playlist_id):
                   'duration':time_duration(i['contentDetails']['duration']),
                   'thumbnail':i['snippet']['thumbnails'],
                   'caption_status':i['contentDetails']['caption']
+                  }
+    #pprint(filtered_dict)
     z.append(filtered_dict)
   #df2=pd.DataFrame(z)
   #df2
   return z
+
 
 def vedio_id_info(playlist_id):
   request = yt.playlistItems().list(part="contentDetails", playlistId= playlist_id, maxResults=50)
