@@ -110,7 +110,10 @@ def comment_info():
   s =[]
   for i in Vedio_id_info:
     request = yt.commentThreads().list(part="id,snippet", videoId=i, maxResults=5)
-    responce6 = request.execute()
+    try:
+      responce6 = request.execute()
+    except:
+      pass
     d.append(responce6['items'])
     for j in range(len(responce6['items'])):
       filtered_dict = {'comment_id': responce6['items'][j]['id'],
