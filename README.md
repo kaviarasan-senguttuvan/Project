@@ -11,9 +11,7 @@ render link - https://youtubeproject.onrender.com
 
 1. [Setup](#setup)
 2. [Usage](#usage)
-3. [Dependencies](#dependencies)
-4. [Configuration](#configuration)
-5. [Workflow](#workflow)
+3. [Contact](#Contact)
 
 ## Setup
 
@@ -49,3 +47,8 @@ render link - https://youtubeproject.onrender.com
 
    Visualize and analyze the data using Streamlit's data visualization features
 
+## Contact
+
+Email - kavipossible10@gmail.com
+
+LinkedIn - https://www.linkedin.com/in/kaviarasan-senguttuvan-5b1384216/
