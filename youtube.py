@@ -72,20 +72,19 @@ def vedio_info(playlist_id):
   z =[]
   for i in a:
     filtered_dict = {'video_id': i['id'],
-                   'playlist_id':playlist_id,
-                   'channel_id':i['snippet']['channelId'],
-                   'video_name':i['snippet']['title'],
-                   'video_description':i['snippet']['description'],
-                   'published_date':i['snippet']['publishedAt'][0:10],
-                   'published_time':i['snippet']['publishedAt'][11:19],
-                   'view_count':int(i['statistics']['viewCount']),
-                   'like_count':int(i['statistics']['likeCount']),
-                   'favorite_count':int(i['statistics']['favoriteCount']),
-                   'comment_count':int(i['statistics']['commentCount']),
-                   'duration':time_duration(i['contentDetails']['duration']),
-                   'thumbnail':i['snippet']['thumbnails'],
-                   'caption_status':i['contentDetails']['caption']
-                   }
+                  'playlist_id':playlist_id,
+                  'channel_id':i['snippet']['channelId'],
+                  'video_name':i['snippet']['title'],
+                  'video_description':i['snippet']['description'],
+                  'published_date':i['snippet']['publishedAt'][0:10],
+                  'published_time':i['snippet']['publishedAt'][11:19],
+                  'view_count':i['statistics'].get('viewCount', 0),
+                  'like_count':i['statistics'].get('likeCount', 0),
+                  'favorite_count':i['statistics'].get('favoriteCount',0),
+                  'comment_count':i['statistics'].get('commentCount',0),
+                  'duration':time_duration(i['contentDetails']['duration']),
+                  'thumbnail':i['snippet']['thumbnails'],
+                  'caption_status':i['contentDetails']['caption']
     z.append(filtered_dict)
   #df2=pd.DataFrame(z)
   #df2
