@@ -233,7 +233,7 @@ def create_tables():
   conn.commit()
 
   cursor.execute("""CREATE TABLE IF NOT EXISTS cmd(\
-                                        comment_id 			varchar(60) primary key,\
+                                        comment_id 			varchar(60),\
                                         video_id		varchar(50),\
                                         comment_test		text,\
                                         comment_author	text,\
