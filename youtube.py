@@ -402,6 +402,7 @@ if selected == 'Home':
       nosqldb=kavi["you_tube_data"]
       coll=nosqldb["channels_details"]
       coll.insert_one(final)
+      st.write("Data Migrated to MongoDB successfuly")
       #st.json(Channel_info)
 
 if selected == 'Lode Data In SQL':
