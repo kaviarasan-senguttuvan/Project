@@ -49,6 +49,47 @@ def playlist_info():
   Playlist_Id = responce3['items'][0]['contentDetails']['relatedPlaylists']['uploads']
   return Playlist_Id
 
+
+def playlist_table():
+  request = yt.playlists().list(
+          part="snippet,contentDetails,status",
+          channelId=channel_id,
+          maxResults=50)
+  response = request.execute()
+
+  playlists = []
+
+  for i in range(0, len(response['items'])):
+      data = {'playlist_id': response['items'][i]['id'],
+              'playlist_name': response['items'][i]['snippet']['title'],
+              'channel_id': channel_id,
+              'upload_id': playlist_id}
+      playlists.append(data)
+  next_page_token = response.get('nextPageToken')
+
+  a = True
+  while a:
+      if next_page_token is None:
+        a = False
+      else:
+          request = yt.playlists().list(
+              part="snippet,contentDetails,status",
+              channelId=channel_id,
+              maxResults=50,
+              pageToken=next_page_token)
+          response = request.execute()
+
+          for i in range(0, len(response['items'])):
+              data = {'playlist_id': response['items'][i]['id'],
+                      'playlist_name': response['items'][i]['snippet']['title'],
+                      'channel_id': channel_id,
+                      'upload_id': playlist_id}
+              playlists.append(data)
+          next_page_token = response.get('nextPageToken')
+
+  return playlists
+
+
 def vedio_info(playlist_id):
   
   def time_duration(t):
@@ -93,7 +134,6 @@ def vedio_info(playlist_id):
   #df2
   return z
 
-
 def vedio_id_info(playlist_id):
   request = yt.playlistItems().list(part="contentDetails", playlistId= playlist_id, maxResults=50)
   responce4 = request.execute()
@@ -129,7 +169,7 @@ def comment_info():
   return s
 
 def Final_Table():
-  finalfile={'Channel_info':Channel_info,'Vedio_info':Vedio_info,'Comment_info':cmd}
+  finalfile={'Channel_info':Channel_info,'PT':PT_info,'Vedio_info':Vedio_info,'Comment_info':cmd}
   return finalfile
 
 def get_chn_Table():
@@ -169,6 +209,20 @@ def get_cmd_Table():
   df1 = pd.DataFrame(task)
   return df1
 
+def get_pl_table():  
+  kavi = pymongo.MongoClient("mongodb+srv://kavi:kaviarasan@kaviarasan.obhf2rg.mongodb.net/?retryWrites=true&w=majority")
+  nosqldb=kavi["you_tube_data"]
+  coll=nosqldb["channels_details"]
+  task = []
+  for i in coll.find({},{"_id":0,"PT":1}):
+    for j in range(len(i['PT'])):
+      #print(i['Vedio_info'][j])
+      task.append(i['PT'][j])
+
+  df3 = pd.DataFrame(task)
+  return df3
+
+
 def connecte_db():
   host_name = 'database-1.cjti1owjmpi2.ap-south-1.rds.amazonaws.com'
   dbname = 'youtube'
@@ -194,6 +248,8 @@ def drop_tables():
   cursor.execute('DROP TABLE IF EXISTS video')
   conn.commit()
   cursor.execute('DROP TABLE IF EXISTS cmd')
+  conn.commit()
+  cursor.execute('DROP TABLE IF EXISTS playlist')
   conn.commit()
 
 def create_tables():
@@ -240,6 +296,12 @@ def create_tables():
                                         comment_published_date	date,\
                                         comment_published_time  time)""")
   conn.commit()
+  cursor.execute("create table if not exists playlist(\
+                                        playlist_id		varchar(255) primary key,\
+                                        playlist_name	varchar(255),\
+                                        channel_id		varchar(255),\
+                                        upload_id		varchar(255))")
+  conn.commit()
 
 def insert_data_tables():
   host_name = 'database-1.cjti1owjmpi2.ap-south-1.rds.amazonaws.com'
@@ -284,6 +346,11 @@ def insert_data_tables():
                      comment_published_time) values(%s,%s,%s,%s,%s,%s)",
                      df2.values.tolist())
 
+  conn.commit()
+  cursor.executemany("insert into playlist(playlist_id,\
+                     playlist_name,\
+                     channel_id,\
+                     upload_id) values(%s,%s,%s,%s)", df3.values.tolist())
   conn.commit()
 
 def qus1():
@@ -366,10 +433,6 @@ def qus10():
   s = cursor.fetchall()
   return pd.DataFrame(s, columns=['video_name', 'comment_count', 'channel_name'])
 
-
-
-
-
 st.title('YouTube Data Harvesting and Warehousing')
 
 
@@ -393,7 +456,9 @@ if selected == 'Home':
   if step2:
       yt = connect_api()
       Channel_info = channel_info('a')
+      channel_id = Channel_info['channel_id']
       playlist_id = playlist_info()
+      PT_info = playlist_table()
       Vedio_info = vedio_info(playlist_id)
       Vedio_id_info = vedio_id_info(playlist_id)
       cmd = comment_info()
@@ -419,11 +484,13 @@ if selected == 'Lode Data In SQL':
     df = get_chn_Table()
     df1 = get_vedio_Table()
     df2 = get_cmd_Table()
+    df3 = get_pl_table()
     
     drop_tables()
     create_tables()
     insert_data_tables()
     st.dataframe(df)
+    st.write("Data Migrated Successfuly to postgres SQL, Please proceed with Select the Query option for analysis")
 
 
 if selected =='Select the Query':
