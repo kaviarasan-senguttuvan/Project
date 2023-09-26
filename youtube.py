@@ -413,14 +413,13 @@ def qus9():
   return pd.DataFrame(s, columns=['channel_name', 'average'])
 
 def qus8():
-  cursor.execute("select distinct channel.channel_name, count(distinct video.video_id) as total\
+  cursor.execute("select distinct channel.channel_name\
                  from video\
                  inner join channel on channel.channel_id = video.channel_id\
                  where date_part('year', video.published_date) = 2023\
-                 group by channel.channel_id\
-                 order by total DESC")
+                 group by channel.channel_id")
   s = cursor.fetchall()
-  return pd.DataFrame(s, columns=['channel_name', 'total'])
+  return pd.DataFrame(s, columns=['channel_name'])
 
 
 def qus10():
@@ -466,8 +465,14 @@ if selected == 'Home':
       kavi = pymongo.MongoClient("mongodb+srv://kavi:kaviarasan@kaviarasan.obhf2rg.mongodb.net/?retryWrites=true&w=majority")
       nosqldb=kavi["you_tube_data"]
       coll=nosqldb["channels_details"]
-      coll.insert_one(final)
-      st.write("Data Migrated to MongoDB successfuly")
+      task = []
+      for i in coll.find({},{"_id":0,"Channel_info":1}):
+        task.append(i['Channel_info']["channel_id"])
+      if channel_id in task:
+        st.write("Given Channel already exist")
+      else:
+        coll.insert_one(final)
+        st.write("Data Migrated to MongoDB successfully")
       #st.json(Channel_info)
 
 if selected == 'Lode Data In SQL':
